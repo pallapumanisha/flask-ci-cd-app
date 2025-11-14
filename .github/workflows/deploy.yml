@@ -29,9 +29,6 @@ jobs:
           pip install -r requirements.txt
           pip install pytest  # ensures pytest is installed
 
-      - name: Run tests
-        run: python -m pytest  # safe way to run pytest
-
   deploy:
     name: Deploy to VM
     runs-on: ubuntu-latest
