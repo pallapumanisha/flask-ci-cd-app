@@ -1,4 +1,4 @@
-name: Deploy to VM
+name: Deploy on self-hosted VM
 
 on:
   push:
@@ -7,23 +7,34 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted   # <--- use your runner 'mariadb1'
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Deploy to Server
-        uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          port: ${{ secrets.VM_PORT }}
-          password: ${{ secrets.VM_PASSWORD }}
-          script: |
-            cd /home/manisha/flask-ci-cd-app
-            git pull origin main
-            source venv/bin/activate
-            pip install -r requirements.txt
-            pkill -f "python app.py" || true
-            nohup python app.py > app.log 2>&1 &
+      - name: Ensure project directory exists
+        run: |
+          cd /home/manisha
+          if [ ! -d "flask-ci-cd-app" ]; then
+            git clone https://github.com/pallapumanisha/flask-ci-cd-app.git
+          fi
+
+      - name: Pull latest code
+        run: |
+          cd /home/manisha/flask-ci-cd-app
+          git pull origin main
+
+      - name: Setup Python venv and install deps
+        run: |
+          cd /home/manisha/flask-ci-cd-app
+          python3 -m venv venv || true
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Restart Flask app
+        run: |
+          cd /home/manisha/flask-ci-cd-app
+          source venv/bin/activate
+          pkill -f "python app.py" || true
+          nohup python app.py > app.log 2>&1 &
