@@ -40,7 +40,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Deploy to VM and restart Flask
+      - name: Deploy to VM and restart Flask service
         uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.VM_HOST }}
@@ -52,6 +52,6 @@ jobs:
             git pull origin main
             source /home/manisha/venv/bin/activate
             pip install -r requirements.txt
-            pkill -f "python3 app.py" || true
-            pkill -f "python app.py" || true
-            nohup python app.py > app.log 2>&1 &
+            # Use systemd to handle Flask app
+            sudo systemctl restart flask-app.service
+            sudo systemctl status flask-app.service --no-pager
