@@ -1,5 +1,6 @@
-name: Flask CI/CD Pipeline (Passwordless)
+name: Flask CI/CD Pipeline (Systemd)
 
+# Trigger on push or PR to main branch
 on:
   push:
     branches:
@@ -27,7 +28,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Optional: enable if you add tests
+      # Optional: run tests if you have any
       # - name: Run tests
       #   run: python -m pytest
 
@@ -40,7 +41,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Deploy to VM and restart Flask
+      - name: Deploy to VM and restart Flask service
         uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.VM_HOST }}
@@ -52,6 +53,5 @@ jobs:
             git pull origin main
             source /home/manisha/venv/bin/activate
             pip install -r requirements.txt
-            # Restart Flask service using systemd user mode
-            systemctl --user restart flask-app.service
-            systemctl --user status flask-app.service --no-pager
+            sudo /usr/bin/systemctl restart flask-app.service
+            sudo /usr/bin/systemctl status flask-app.service --no-pager
