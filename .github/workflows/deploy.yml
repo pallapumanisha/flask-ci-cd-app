@@ -12,7 +12,7 @@ on:
 jobs:
   build-and-test:
     name: Build & Test
-    runs-on: ubuntu-latest
+    runs-on: mariadb1
 
     steps:
       - name: Checkout repository
