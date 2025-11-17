@@ -1,22 +1,14 @@
-deploy:
-  name: Deploy to VM
-  runs-on: [self-hosted, Linux, X64]
-  needs: build-and-test
-
-  steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Copy files to VM and restart Flask
-      uses: appleboy/ssh-action@v0.1.9
-      with:
-        host: ${{ secrets.VM_HOST }}
-        username: ${{ secrets.VM_USER }}
-        password: ${{ secrets.VM_PASSWORD }}
-        port: 22
-        script: |
-          cd /home/manisha/flask-ci-cd-app
-          git pull origin main
-          source /home/manisha/venv/bin/activate
-          pip install -r requirements.txt
-          sudo systemctl restart flask-app.service
+- name: Deploy to VM and restart Flask
+  uses: appleboy/ssh-action@v0.1.9
+  with:
+    host: ${{ secrets.VM_HOST }}
+    username: ${{ secrets.VM_USER }}
+    password: ${{ secrets.VM_PASSWORD }}
+    port: 22
+    debug: true
+    script: |
+      cd /home/manisha/flask-ci-cd-app
+      git pull origin main
+      source /home/manisha/venv/bin/activate
+      pkill -f "python3 app.py" || true
+      nohup python app.py > app.log 2>&1 &
