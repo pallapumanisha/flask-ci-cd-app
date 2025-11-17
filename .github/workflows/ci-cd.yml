@@ -52,6 +52,5 @@ jobs:
             git pull origin main
             source /home/manisha/venv/bin/activate
             pip install -r requirements.txt
-            # Restart Flask service using passwordless sudo
             sudo /usr/bin/systemctl restart flask-app.service
             sudo /usr/bin/systemctl status flask-app.service --no-pager
