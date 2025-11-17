@@ -2,38 +2,16 @@ name: Flask CI/CD
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  build-and-test:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.12
-
-      - name: Install dependencies
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
-
-      - name: Run tests
-        run: |
-          source venv/bin/activate
-          # Add test commands if you have any, e.g. pytest
-          echo "Tests passed ✅"
-
-  deploy-to-vm:
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    steps:
-      - name: Deploy to VM via SSH
+      - name: Deploy to VM and restart Flask
         uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.VM_HOST }}
@@ -41,7 +19,16 @@ jobs:
           password: ${{ secrets.VM_PASSWORD }}
           port: 22
           script: |
+            # Navigate to app directory
             cd /home/manisha/flask-ci-cd-app
+
+            # Pull latest code
             git pull origin main
+
+            # Install/update dependencies
+            source /home/manisha/venv/bin/activate
             pip install -r requirements.txt
+
+            # Restart Flask service (systemd handles venv)
             sudo systemctl restart flask-app.service
+            sudo systemctl status flask-app.service --no-pager
