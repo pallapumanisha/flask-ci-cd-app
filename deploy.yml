@@ -16,12 +16,12 @@ jobs:
       - name: Deploy to Server
         uses: appleboy/ssh-action@v1.1.0
         with:
-          host: ${{ VM_HOST }}
-          username: ${{ VM_USER }}
-          passwrd: ${{ VM_PASSWORD }}
-          key: ${{ VM_SSH_KEY }}
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME }}
+          port: ${{ secrets.VM_PORT }}
+          password: ${{ secrets.VM_PASSWORD }}
           script: |
-            cd /home/USERNAME/flask-ci-cd-app   
+            cd /home/pallapumanisha/flask-ci-cd-app
             git pull origin main
             source venv/bin/activate
             pip install -r requirements.txt
