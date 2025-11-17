@@ -1,4 +1,4 @@
-name: Flask CI/CD Pipeline (Password SSH)
+name: Flask CI/CD Pipeline (Passwordless)
 
 on:
   push:
@@ -52,5 +52,6 @@ jobs:
             git pull origin main
             source /home/manisha/venv/bin/activate
             pip install -r requirements.txt
-            sudo /usr/bin/systemctl restart flask-app.service
-            sudo /usr/bin/systemctl status flask-app.service --no-pager
+            # Restart Flask service using systemd user mode
+            systemctl --user restart flask-app.service
+            systemctl --user status flask-app.service --no-pager
