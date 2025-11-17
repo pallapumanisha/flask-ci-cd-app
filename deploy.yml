@@ -5,10 +5,11 @@
     username: ${{ secrets.VM_USER }}
     password: ${{ secrets.VM_PASSWORD }}
     port: 22
-    debug: true
     script: |
       cd /home/manisha/flask-ci-cd-app
       git pull origin main
       source /home/manisha/venv/bin/activate
+      pip install -r requirements.txt
       pkill -f "python3 app.py" || true
+      pkill -f "python app.py" || true
       nohup python app.py > app.log 2>&1 &
