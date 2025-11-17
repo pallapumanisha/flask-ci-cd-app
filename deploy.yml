@@ -17,11 +17,11 @@ jobs:
         uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ VM_HOST }}
-          username: ${{ VM_USERNAME }}
-          port: ${{ VM_PORT }}
-          password: ${{ secrets.VM_PASSWORD }}
+          username: ${{ VM_USER }}
+          passwrd: ${{ VM_PASSWORD }}
+          key: ${{ VM_SSH_KEY }}
           script: |
-            cd /home/USERNAME/flask-ci-cd-app   # <-- change USERNAME to your real VM username
+            cd /home/USERNAME/flask-ci-cd-app   
             git pull origin main
             source venv/bin/activate
             pip install -r requirements.txt
