@@ -34,7 +34,7 @@ jobs:
 
   deploy:
     name: Deploy to VM
-    runs-on: ubuntu-latest
+    runs-on: mariadb1
     needs: build-and-test
     steps:
       - name: Checkout repository
