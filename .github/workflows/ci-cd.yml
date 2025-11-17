@@ -1,4 +1,4 @@
-name: Flask CI/CD Pipeline (Passwordless sudo)
+name: Flask CI/CD Pipeline (Password SSH)
 
 on:
   push:
@@ -40,7 +40,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Deploy to VM and restart Flask service
+      - name: Deploy to VM and restart Flask
         uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.VM_HOST }}
@@ -52,7 +52,6 @@ jobs:
             git pull origin main
             source /home/manisha/venv/bin/activate
             pip install -r requirements.txt
-
             # Restart Flask service using passwordless sudo
-            sudo /bin/systemctl restart flask-app.service
-            sudo /bin/systemctl status flask-app.service --no-pager
+            sudo /usr/bin/systemctl restart flask-app.service
+            sudo /usr/bin/systemctl status flask-app.service --no-pager
