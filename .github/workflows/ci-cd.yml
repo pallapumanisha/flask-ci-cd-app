@@ -10,24 +10,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout code (required even though we deploy via SSH)
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Create SSH key file from secret
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-      # 3. Add VM host key to known_hosts (FIXED LINE)
       - name: Add VM to known_hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -p ${{ secrets.VM_PORT }} ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
 
-      # 4. Deploy to VM via SSH
       - name: Deploy to VM
         run: |
           ssh -i ~/.ssh/id_ed25519 \
@@ -37,16 +33,10 @@ jobs:
                 cd /home/manisha/flask-ci-cd-app
                 git pull origin main
 
-                # Activate virtual environment
                 source /home/manisha/venv/bin/activate
-
-                # Install Python dependencies
                 pip install -r requirements.txt
 
-                # Reload and restart systemd user service
                 systemctl --user daemon-reload
                 systemctl --user restart flask-app.service
-
-                # Show status
                 systemctl --user status flask-app.service --no-pager
           EOF
