@@ -1,4 +1,4 @@
-name: Flask CI/CD
+name: Flask CI/CD Deployment
 
 on:
   push:
@@ -10,31 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.12'
+        python-version: 3.12
 
     - name: Install dependencies
       run: |
-        python -m venv ~/venv
-        source ~/venv/bin/activate
+        python -m venv venv
+        source venv/bin/activate
         pip install -r requirements.txt
 
-    - name: Deploy to server
-      uses: appleboy/ssh-action@v0.1.6
+    - name: Deploy to VM via SSH
+      uses: appleboy/ssh-action@v0.1.9
       with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        key: ${{ secrets.SSH_KEY }}
-        port: ${{ secrets.PORT }}
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USER }}
+        key: ${{ secrets.VM_SSH_KEY }}
+        port: ${{ secrets.VM_PORT }}
         script: |
-          cd ~/flask-ci-cd-app
+          cd /home/manisha/flask-ci-cd-app
           git pull origin main
-          source ~/venv/bin/activate
+          source /home/manisha/venv/bin/activate
           pip install -r requirements.txt
           systemctl --user daemon-reload
           systemctl --user restart flask-app.service
