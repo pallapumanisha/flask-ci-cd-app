@@ -2,28 +2,39 @@ name: Flask CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Deploy to VM
-        uses: appleboy/ssh-action@v0.1.9
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          port: ${{ secrets.VM_PORT }}
-          script: |
-            cd /home/manisha/flask-ci-cd-app
+          python-version: '3.12'
+
+      - name: Copy SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VM_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Add VM to known hosts
+        run: |
+          ssh-keyscan -p ${{ secrets.VM_PORT }} ${{ secrets.VM_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy Flask app
+        run: |
+          ssh -i ~/.ssh/id_rsa -p ${{ secrets.VM_PORT }} ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} << 'EOF'
+            cd /home/${{ secrets.VM_USER }}/flask-ci-cd-app
             git pull origin main
-            source /home/manisha/venv/bin/activate
+            source /home/${{ secrets.VM_USER }}/venv/bin/activate
             pip install -r requirements.txt
             systemctl --user daemon-reload
             systemctl --user restart flask-app.service
             systemctl --user status flask-app.service --no-pager
+          EOF
