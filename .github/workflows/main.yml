@@ -13,14 +13,20 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      - name: Sync code to app directory on VM
+        run: |
+          rsync -av --delete . /home/manisha/flask-ci-cd-app/
+
       - name: Ensure venv exists
         run: |
+          cd /home/manisha/flask-ci-cd-app
           if [ ! -d "venv" ]; then
             python3 -m venv venv
           fi
 
       - name: Install dependencies
         run: |
+          cd /home/manisha/flask-ci-cd-app
           source venv/bin/activate
           pip install -r requirements.txt
 
