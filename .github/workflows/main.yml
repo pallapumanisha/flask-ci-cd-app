@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Sync code to app directory on VM
+      - name: Sync code to app directory
         run: |
           rsync -av --delete . /home/manisha/flask-ci-cd-app/
 
