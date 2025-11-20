@@ -10,53 +10,42 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # 1) Get the latest code from GitHub
+      # 1) Get latest code from GitHub
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 2) Install and start MongoDB via YAML
+      # 2) Install and start MongoDB
       - name: Install and start MongoDB
         run: |
-          # If mongod command is not found, install MongoDB
           if ! command -v mongod >/dev/null 2>&1; then
             echo "MongoDB not found. Installing MongoDB..."
 
-            # Create MongoDB keyring file only if it doesn't exist
             if [ ! -f /usr/share/keyrings/mongodb-server-8.0.gpg ]; then
-              echo "Creating MongoDB keyring..."
               curl -fsSL https://pgp.mongodb.com/server-8.0.asc | \
                 sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
-            else
-              echo "MongoDB keyring already exists, skipping."
             fi
 
-            # Add MongoDB repo only if it doesn't exist
             if [ ! -f /etc/apt/sources.list.d/mongodb-org-8.0.list ]; then
-              echo "Adding MongoDB apt repository..."
               echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | \
                 sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
-            else
-              echo "MongoDB repo list already exists, skipping."
             fi
 
-            echo "Updating apt and installing mongodb-org..."
             sudo apt-get update
             sudo apt-get install -y mongodb-org
           else
             echo "MongoDB already installed, skipping installation."
           fi
 
-          echo "Ensuring mongod service is enabled and running..."
           sudo systemctl enable mongod
           sudo systemctl start mongod
-          sudo systemctl status mongod --no-pager
+          sudo systemctl status mongod --no-pager || true
 
-      # 3) Sync code from runner workspace to app directory on VM
+      # 3) Sync code to app directory
       - name: Sync code to app directory
         run: |
           rsync -av --delete . /home/manisha/flask-ci-cd-app/
 
-      # 4) Ensure Python virtual environment exists
+      # 4) Ensure venv exists
       - name: Ensure venv exists
         run: |
           cd /home/manisha/flask-ci-cd-app
@@ -64,14 +53,15 @@ jobs:
             python3 -m venv venv
           fi
 
-      # 5) Install Python dependencies (Flask + pymongo etc.)
+      # 5) Install dependencies (Flask, pymongo, gunicorn) from requirements.txt
       - name: Install dependencies
         run: |
           cd /home/manisha/flask-ci-cd-app
           source venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 6) Restart your Flask systemd service
+      # 6) Restart Flask service
       - name: Restart Flask service
         run: |
           sudo systemctl restart flaskapp
@@ -80,9 +70,7 @@ jobs:
       # 7) Verify the app + MongoDB response
       - name: Verify Flask + MongoDB response
         run: |
-          # Wait a bit for the service to restart fully
           sleep 5
-          # 👇 change port if your app runs on another port
           RESPONSE=$(curl -s http://127.0.0.1:5000/)
           echo "Response from app: $RESPONSE"
           if [[ "$RESPONSE" != *"MongoDB server is successfully installed"* ]]; then
