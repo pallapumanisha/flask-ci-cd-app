@@ -24,7 +24,7 @@ jobs:
             python3 -m venv venv
           fi
 
-      - name: Install dependencies
+      - name: Install dependencies (Flask + pymongo)
         run: |
           cd /home/manisha/flask-ci-cd-app
           source venv/bin/activate
@@ -33,3 +33,10 @@ jobs:
       - name: Restart Flask service
         run: |
           sudo systemctl restart flaskapp
+
+      - name: Verify Flask + MongoDB response
+        run: |
+          # Wait a bit for the service to restart
+          sleep 5
+          # Call the app's root URL from the VM itself
+          curl http://127.0.0.1:5000/ || exit 1
