@@ -7,8 +7,9 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     try:
+        # Connect to MongoDB on localhost:27017
         client = MongoClient("mongodb://localhost:27017/", serverSelectionTimeoutMS=2000)
-        client.admin.command("ping")
+        client.admin.command("ping")  # Check MongoDB
         message = "MongoDB server is successfully installed"
     except ConnectionFailure:
         message = "Failed to connect to MongoDB server"
