@@ -10,13 +10,43 @@ jobs:
     runs-on: self-hosted
 
     steps:
+      # 1) Get the latest code from GitHub
       - name: Checkout repo
         uses: actions/checkout@v4
 
+      # 2) Install and start MongoDB (safe to run every time)
+      - name: Install and start MongoDB
+        run: |
+          # If mongod command is not found, install MongoDB
+          if ! command -v mongod >/dev/null 2>&1; then
+            echo "MongoDB not found. Installing MongoDB..."
+
+            # Import MongoDB GPG key
+            curl -fsSL https://pgp.mongodb.com/server-8.0.asc | \
+              sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
+
+            # Add MongoDB repository for Ubuntu 24.04 (noble)
+            echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | \
+              sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+
+            sudo apt-get update
+            sudo apt-get install -y mongodb-org
+          else
+            echo "MongoDB already installed, skipping installation."
+          fi
+
+          # Enable and start mongod service (if it was stopped, this starts it again)
+          echo "Ensuring mongod service is enabled and running..."
+          sudo systemctl enable mongod
+          sudo systemctl start mongod
+          sudo systemctl status mongod --no-pager
+
+      # 3) Sync code from runner workspace to your app directory on VM
       - name: Sync code to app directory
         run: |
           rsync -av --delete . /home/manisha/flask-ci-cd-app/
 
+      # 4) Ensure Python virtual environment exists
       - name: Ensure venv exists
         run: |
           cd /home/manisha/flask-ci-cd-app
@@ -24,19 +54,29 @@ jobs:
             python3 -m venv venv
           fi
 
-      - name: Install dependencies (Flask + pymongo)
+      # 5) Install Python dependencies (Flask + pymongo, etc.)
+      - name: Install dependencies
         run: |
           cd /home/manisha/flask-ci-cd-app
           source venv/bin/activate
           pip install -r requirements.txt
 
+      # 6) Restart your Flask systemd service
       - name: Restart Flask service
         run: |
           sudo systemctl restart flaskapp
+          sudo systemctl status flaskapp --no-pager
 
+      # 7) Verify the app response includes the MongoDB success message
       - name: Verify Flask + MongoDB response
         run: |
-          # Wait a bit for the service to restart
+          # Wait a bit for the service to fully restart
           sleep 5
-          # Call the app's root URL from the VM itself
-          curl http://127.0.0.1:5000/ || exit 1
+          # 👇 Change port here if your app runs on a different port than 5000
+          RESPONSE=$(curl -s http://127.0.0.1:5000/)
+          echo "Response from app: $RESPONSE"
+          if [[ "$RESPONSE" != *"MongoDB server is successfully installed"* ]]; then
+            echo "Expected MongoDB success message not found!"
+            exit 1
+          fi
+          echo "MongoDB check passed and app responded correctly."
