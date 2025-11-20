@@ -12,7 +12,7 @@ def home():
         client.admin.command("ping")  # Check MongoDB
         message = "MongoDB server is successfully installed"
     except ConnectionFailure:
-        message = "Failed to connect to MongoDB server"
+        message = "Failed to connect to MongoDB server. Badam Psst"
     finally:
         try:
             client.close()
