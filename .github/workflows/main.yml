@@ -10,11 +10,9 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # 1) Get latest code from GitHub
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 2) Install and start MongoDB
       - name: Install and start MongoDB
         run: |
           if ! command -v mongod >/dev/null 2>&1; then
@@ -40,34 +38,26 @@ jobs:
           sudo systemctl start mongod
           sudo systemctl status mongod --no-pager || true
 
-      # 3) Sync code to app directory
-      - name: Sync code to app directory
+      - name: Build Docker image
         run: |
-          rsync -av --delete . /home/manisha/flask-ci-cd-app/
+          docker build -t flask-ci-cd-app:latest .
 
-      # 4) Ensure venv exists
-      - name: Ensure venv exists
+      - name: Stop and remove old container
         run: |
-          cd /home/manisha/flask-ci-cd-app
-          if [ ! -d "venv" ]; then
-            python3 -m venv venv
+          if [ "$(docker ps -q -f name=flask-ci-cd-container)" ]; then
+            docker stop flask-ci-cd-container
+            docker rm flask-ci-cd-container
+          elif [ "$(docker ps -aq -f status=exited -f name=flask-ci-cd-container)" ]; then
+            docker rm flask-ci-cd-container
           fi
 
-      # 5) Install dependencies (Flask, pymongo, gunicorn) from requirements.txt
-      - name: Install dependencies
+      - name: Run new container
         run: |
-          cd /home/manisha/flask-ci-cd-app
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          docker run -d \
+            --name flask-ci-cd-container \
+            --network host \
+            flask-ci-cd-app:latest
 
-      # 6) Restart Flask service
-      - name: Restart Flask service
-        run: |
-          sudo systemctl restart flaskapp
-          sudo systemctl status flaskapp --no-pager
-
-      # 7) Verify the app + MongoDB response
       - name: Verify Flask + MongoDB response
         run: |
           sleep 5
