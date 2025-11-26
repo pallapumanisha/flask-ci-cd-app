@@ -13,7 +13,7 @@ def home():
         message = "MongoDB server is successfully installed via Docker CI/CD 🚀 maaar"
 
     except ConnectionFailure:
-        message = "Failed to connect to MongoDB server. Badam Psst"
+        message = "Failed to connect to MongoDB server. chittamma"
     finally:
         try:
             client.close()
