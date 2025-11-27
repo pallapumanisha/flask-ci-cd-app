@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    volumes:
+      - mongo-data:/data/db
+
+  flaskapp:
+    build: .
+    container_name: flask-ci-cd-app
+    depends_on:
+      - mongodb
+    ports:
+      - "5000:5000"
+
+volumes:
+  mongo-data:
