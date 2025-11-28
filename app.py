@@ -6,19 +6,21 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
+    client = None
     try:
-        # Connect to MongoDB on localhost:27017
-        client = MongoClient("mongodb://localhost:27017/", serverSelectionTimeoutMS=2000)
+        # 👉 Connect to MongoDB using the service name "mongo"
+        client = MongoClient("mongodb://mongo:27017/", serverSelectionTimeoutMS=2000)
         client.admin.command("ping")  # Check MongoDB
-        message = "MongoDB server is successfully installed via dockercompose.yml🚀 "
+        message = "MongoDB server is successfully installed via Docker compose.yml CI/CD 🚀"
 
     except ConnectionFailure:
         message = "Failed to connect to MongoDB server. chittamma"
     finally:
-        try:
-            client.close()
-        except Exception:
-            pass
+        if client:
+            try:
+                client.close()
+            except Exception:
+                pass
 
     return message
 
