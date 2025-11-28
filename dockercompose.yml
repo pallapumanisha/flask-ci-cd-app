@@ -1,19 +1,6 @@
 version: "3.9"
 
 services:
-  mongo:
-    image: mongo:6
-    container_name: flask-ci-cd-app-mongo
-    ports:
-      - "27017:27017"
-    healthcheck:
-      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
-      interval: 2s
-      timeout: 2s
-      retries: 15
-    volumes:
-      - mongo_data:/data/db
-
   web:
     build: .
     container_name: flask-ci-cd-app-flaskapp
@@ -22,8 +9,13 @@ services:
     environment:
       - MONGO_URI=mongodb://mongo:27017/
     depends_on:
-      mongo:
-        condition: service_healthy
+      - mongo
+
+  mongo:
+    image: mongo:6
+    container_name: flask-ci-cd-app-mongo
+    volumes:
+      - mongo_data:/data/db
 
 volumes:
   mongo_data:
