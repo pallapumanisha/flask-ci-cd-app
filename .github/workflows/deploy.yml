@@ -19,31 +19,27 @@ jobs:
           docker compose down
           docker compose up -d --build
 
-      - name: Wait for Flask app to connect to MongoDB
-        run: |
-          MAX_RETRIES=20
-          SLEEP_TIME=3
-          RETRY_COUNT=0
+- name: Wait for Flask app to connect to MongoDB
+  run: |
+    MAX_RETRIES=20
+    SLEEP_TIME=5
+    RETRY_COUNT=0
 
-          while true; do
-            RESPONSE=$(curl -s http://127.0.0.1:5000/)
-            echo "Response from app: $RESPONSE"
+    while true; do
+      RESPONSE=$(curl -s http://127.0.0.1:5000/)
+      echo "Response from app: $RESPONSE"
 
-            if [[ "$RESPONSE" == *"MongoDB server is successfully installed"* ]]; then
-              echo "MongoDB check passed and app responded correctly."
-              break
-            fi
+      if [[ "$RESPONSE" == *"MongoDB server is successfully installed"* ]]; then
+        echo "MongoDB check passed and app responded correctly."
+        break
+      fi
 
-            RETRY_COUNT=$((RETRY_COUNT+1))
-            if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
-              echo "Expected MongoDB success message not found after $MAX_RETRIES retries!"
-              exit 1
-            fi
+      RETRY_COUNT=$((RETRY_COUNT+1))
+      if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+        echo "Expected MongoDB success message not found after $MAX_RETRIES retries!"
+        exit 1
+      fi
 
-            echo "MongoDB not ready yet, retrying in $SLEEP_TIME seconds..."
-            sleep $SLEEP_TIME
-          done
-
-      - name: Continue deployment
-        run: |
-          echo "Everything is ready. Deployment succeeded."
+      echo "MongoDB not ready yet, retrying in $SLEEP_TIME seconds..."
+      sleep $SLEEP_TIME
+    done
