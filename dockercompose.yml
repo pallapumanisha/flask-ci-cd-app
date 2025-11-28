@@ -1,5 +1,4 @@
 version: "3.9"
-
 services:
   web:
     build: .
@@ -15,7 +14,7 @@ services:
     image: mongo:6
     container_name: flask-ci-cd-app-mongo
     volumes:
-      - mongo_data:/data/db
+      - mongo-data:/data/db
 
 volumes:
-  mongo_data:
+  mongo-data:
