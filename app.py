@@ -10,7 +10,7 @@ def home():
         # Connect to MongoDB on localhost:27017
         client = MongoClient("mongodb://localhost:27017/", serverSelectionTimeoutMS=2000)
         client.admin.command("ping")  # Check MongoDB
-        message = "MongoDB server is successfully installed via Docker wswswsws 🚀 "
+        message = "MongoDB server is successfully installed via dockercompose.yml🚀 "
 
     except ConnectionFailure:
         message = "Failed to connect to MongoDB server. chittamma"
