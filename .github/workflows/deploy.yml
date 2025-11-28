@@ -1,20 +1,24 @@
-name: Deploy to VM
+- name: Wait for Flask app to connect to MongoDB
+  run: |
+    MAX_RETRIES=20
+    SLEEP_TIME=3
+    RETRY_COUNT=0
 
-on:
-  push:
-    branches:
-      - main
+    while true; do
+      RESPONSE=$(curl -s http://127.0.0.1:5000/)
+      echo "Response from app: $RESPONSE"
 
-jobs:
-  deploy:
-    runs-on: self-hosted
+      if [[ "$RESPONSE" == *"MongoDB server is successfully installed"* ]]; then
+        echo "MongoDB check passed and app responded correctly."
+        break
+      fi
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      RETRY_COUNT=$((RETRY_COUNT+1))
+      if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+        echo "Expected MongoDB success message not found after $MAX_RETRIES retries!"
+        exit 1
+      fi
 
-      - name: Deploy with Docker Compose
-        run: |
-          cd ~/flask-ci-cd-app   # or the path where repo is
-          docker compose down
-          docker compose up -d --build
+      echo "MongoDB not ready yet, retrying in $SLEEP_TIME seconds..."
+      sleep $SLEEP_TIME
+    done
