@@ -1,4 +1,4 @@
-name: Deploy Flask + Mongo
+name: Deploy Flask App
 
 on:
   push:
@@ -13,9 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build and start containers
+      - name: Build and start Docker containers
         run: |
           cd ~/flask-ci-cd-app
+          docker compose down
           docker compose up -d --build
 
       - name: Wait for Flask app to connect to MongoDB
@@ -25,7 +26,7 @@ jobs:
           RETRY_COUNT=0
 
           while true; do
-            RESPONSE=$(docker exec flask-ci-cd-app-flaskapp curl -s http://localhost:5000/)
+            RESPONSE=$(curl -s http://127.0.0.1:5000/)
             echo "Response from app: $RESPONSE"
 
             if [[ "$RESPONSE" == *"MongoDB server is successfully installed"* ]]; then
@@ -44,4 +45,5 @@ jobs:
           done
 
       - name: Continue deployment
-        run: echo "Everything is ready. Proceeding..."
+        run: |
+          echo "Everything is ready. Deployment succeeded."
