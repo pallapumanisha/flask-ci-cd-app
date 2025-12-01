@@ -1,4 +1,4 @@
-name: Deploy to VM
+name: Deploy Flask CI/CD App
 
 on:
   push:
@@ -10,67 +10,40 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      # 1) Get latest code from GitHub
-      - name: Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2) Install and start MongoDB
-      - name: Install and start MongoDB
+      - name: Build and start Docker containers
         run: |
-          if ! command -v mongod >/dev/null 2>&1; then
-            echo "MongoDB not found. Installing MongoDB..."
+          cd ~/flask-ci-cd-app
+          docker compose up -d --build
 
-            if [ ! -f /usr/share/keyrings/mongodb-server-8.0.gpg ]; then
-              curl -fsSL https://pgp.mongodb.com/server-8.0.asc | \
-                sudo gpg -o /usr/share/keyrings/mongodb-server-8.0.gpg --dearmor
+      - name: Wait for Flask app to connect to MongoDB
+        run: |
+          MAX_RETRIES=40
+          SLEEP_TIME=5
+          RETRY_COUNT=0
+          
+          echo "Waiting for MongoDB to be ready..."
+          while true; do
+            RESPONSE=$(curl -s http://127.0.0.1:5000/ || echo "NO_RESPONSE")
+            echo "Response from app: $RESPONSE"
+
+            if [[ "$RESPONSE" == *"MongoDB server is successfully installed via Docker compose CI/CD"* ]]; then
+              echo "MongoDB check passed and app responded correctly."
+              break
             fi
 
-            if [ ! -f /etc/apt/sources.list.d/mongodb-org-8.0.list ]; then
-              echo "deb [ signed-by=/usr/share/keyrings/mongodb-server-8.0.gpg ] https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/8.0 multiverse" | \
-                sudo tee /etc/apt/sources.list.d/mongodb-org-8.0.list
+            RETRY_COUNT=$((RETRY_COUNT+1))
+            if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
+              echo "Expected MongoDB success message not found after $MAX_RETRIES retries!"
+              exit 1
             fi
 
-            sudo apt-get update
-            sudo apt-get install -y mongodb-org
-          else
-            echo "MongoDB already installed, skipping installation."
-          fi
+            echo "MongoDB or app not ready yet, retrying in $SLEEP_TIME seconds... (attempt $RETRY_COUNT/$MAX_RETRIES)"
+            sleep $SLEEP_TIME
+          done
 
-          sudo systemctl enable mongod
-          sudo systemctl start mongod
-          sudo systemctl status mongod --no-pager || true
-
-      # 3) Build Docker image for Flask app
-      - name: Build Docker image
+      - name: Continue deployment
         run: |
-          sudo docker build -t flask-ci-cd-app:latest .
-
-      # 4) Stop and remove existing container if running
-      - name: Stop and remove old container
-        run: |
-          if [ "$(sudo docker ps -q -f name=flask-ci-cd-container)" ]; then
-            sudo docker stop flask-ci-cd-container
-            sudo docker rm flask-ci-cd-container
-          elif [ "$(sudo docker ps -aq -f status=exited -f name=flask-ci-cd-container)" ]; then
-            sudo docker rm flask-ci-cd-container
-          fi
-
-      # 5) Run new container (host network so MongoDB at localhost works)
-      - name: Run new container
-        run: |
-          sudo docker run -d \
-            --name flask-ci-cd-container \
-            --network host \
-            flask-ci-cd-app:latest
-
-      # 6) Verify the app + MongoDB response
-      - name: Verify Flask + MongoDB response
-        run: |
-          sleep 5
-          RESPONSE=$(curl -s http://127.0.0.1:5000/)
-          echo "Response from app: $RESPONSE"
-          if [[ "$RESPONSE" != *"MongoDB server is successfully installed"* ]]; then
-            echo "Expected MongoDB success message not found!"
-            exit 1
-          fi
-          echo "MongoDB check passed and app responded correctly."
+          echo "Everything is ready. Deployment successful 🎉"
