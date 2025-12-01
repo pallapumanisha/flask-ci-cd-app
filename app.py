@@ -11,9 +11,9 @@ def home():
     try:
         # Read MongoDB URI from environment variable, fallback to service name 'mongo'
         mongo_uri = os.getenv("MONGO_URI", "mongodb://mongo:27017/")
-        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=2000)
         client.admin.command("ping")  # Ping MongoDB to ensure connection
-        
+
         message = "MongoDB server is successfully installed via Docker compose CI/CD 🚀"
     except ConnectionFailure:
         message = "Failed to connect to MongoDB server. Badam Psst"
