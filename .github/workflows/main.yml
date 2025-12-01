@@ -18,33 +18,32 @@ jobs:
           cd ~/flask-ci-cd-app
           docker compose up -d --build
 
-      - name: Wait for Flask app to successfully connect to MongoDB
+      - name: Wait for Flask app to connect to MongoDB
         run: |
           MAX_RETRIES=40
           SLEEP_TIME=5
           RETRY_COUNT=0
           
-          echo "Waiting for Flask app to successfully connect to MongoDB..."
+          echo "Waiting for MongoDB to be ready..."
           while true; do
             RESPONSE=$(curl -s http://127.0.0.1:5000/ || echo "NO_RESPONSE")
             echo "Response from app: $RESPONSE"
-          
+
             if [[ "$RESPONSE" == *"MongoDB server is successfully installed via Docker compose CI/CD"* ]]; then
               echo "MongoDB check passed and app responded correctly."
               break
             fi
-          
+
             RETRY_COUNT=$((RETRY_COUNT+1))
             if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
               echo "Expected MongoDB success message not found after $MAX_RETRIES retries!"
               exit 1
             fi
-          
+
             echo "MongoDB or app not ready yet, retrying in $SLEEP_TIME seconds... (attempt $RETRY_COUNT/$MAX_RETRIES)"
             sleep $SLEEP_TIME
           done
 
       - name: Continue deployment
         run: |
-          echo "Everything is ready. Deployment completed successfully ✅"
-
+          echo "Everything is ready. Deployment successful 🎉"
