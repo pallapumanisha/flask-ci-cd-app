@@ -14,7 +14,7 @@ def home():
         client = MongoClient(mongo_uri, serverSelectionTimeoutMS=2000)
         client.admin.command("ping")  # Ping MongoDB to ensure connection
 
-        message = "MongoDB server is successfully installed via Docker compose CI/CD newline 🚀"
+        message = "MongoDB server is successfully installed via Docker compose CI/CD 9090 🚀"
     except ConnectionFailure:
         message = "Failed to connect to MongoDB server. Badam Psst"
     finally:
