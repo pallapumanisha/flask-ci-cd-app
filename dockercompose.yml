@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: flask-ci-cd-app-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  flaskapp:
+    build: .
+    container_name: flask-ci-cd-app-flaskapp
+    depends_on:
+      - mongo
+    environment:
+      # This matches your app.py:
+      # os.getenv("MONGO_URI", "mongodb://mongo:27017/")
+      MONGO_URI: mongodb://mongo:27017/
+    ports:
+      - "5000:5000"
+    command: gunicorn --bind 0.0.0.0:5000 app:app
+
+volumes:
+  mongo-data:

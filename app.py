@@ -3,10 +3,9 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 import os
 
-app = Flask(__name__)
+iapp = Flask(__name__)
 
-@app.route("/")
-def home():
+@app.route("def home():
     client = None
     try:
         # Use MONGO_URI from environment if present, else default to Docker service name "mongo"
