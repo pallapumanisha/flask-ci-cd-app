@@ -15,7 +15,7 @@ iapp = Flask(__name__)
         # Ping MongoDB to confirm the connection works
         client.admin.command("ping")
 
-        message = "MongoDB server is successfully installed via Docker compose CI/CD 909🚀"
+        message = "MongoDB server is successfully installed via Docker compose CI/CD newline🚀"
     except ConnectionFailure:
         message = "Failed to connect to MongoDB server. Badam Psst"
     except Exception as e:
