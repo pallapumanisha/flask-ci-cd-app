@@ -1,4 +1,4 @@
-name: Deploy Flask CI/CD App
+name: Deploy Flask App with MongoDB
 
 on:
   push:
@@ -7,43 +7,19 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
-
+    runs-on: self-hosted  # Use your self-hosted runner
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build and start Docker containers
-        run: |
-          cd ~/flask-ci-cd-app
-          docker compose up -d --build
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
 
-      - name: Wait for Flask app to connect to MongoDB
-        run: |
-          MAX_RETRIES=40
-          SLEEP_TIME=5
-          RETRY_COUNT=0
-          
-          echo "Waiting for MongoDB to be ready..."
-          while true; do
-            RESPONSE=$(curl -s http://127.0.0.1:5000/ || echo "NO_RESPONSE")
-            echo "Response from app: $RESPONSE"
+      - name: Build Docker images
+        run: docker compose -f docker-compose.yml build
 
-            if [[ "$RESPONSE" == *"MongoDB server is successfully installed via Docker compose CI/CD"* ]]; then
-              echo "MongoDB check passed and app responded correctly."
-              break
-            fi
+      - name: Stop & remove existing containers
+        run: docker compose -f docker-compose.yml down
 
-            RETRY_COUNT=$((RETRY_COUNT+1))
-            if [ $RETRY_COUNT -ge $MAX_RETRIES ]; then
-              echo "Expected MongoDB success message not found after $MAX_RETRIES retries!"
-              exit 1
-            fi
-
-            echo "MongoDB or app not ready yet, retrying in $SLEEP_TIME seconds... (attempt $RETRY_COUNT/$MAX_RETRIES)"
-            sleep $SLEEP_TIME
-          done
-
-      - name: Continue deployment
-        run: |
-          echo "Everything is ready. Deployment successful 🎉"
+      - name: Start containers
+        run: docker compose -f docker-compose.yml up -d
