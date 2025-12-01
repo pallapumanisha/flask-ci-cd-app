@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   mongo:
     image: mongo:6
@@ -18,9 +20,8 @@ services:
     depends_on:
       - mongo
     volumes:
-      - .:/app
-    command: flask run --host=0.0.0.0 --port=5000
+      - .:/app   # Mount local code for live reload
+    command: flask run --host=0.0.0.0 --port=5000  # Run in dev mode for auto-reload
 
 volumes:
   mongo-data:
-
