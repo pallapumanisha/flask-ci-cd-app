@@ -1,0 +1,7 @@
+actions-runner
+.git
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.swp
