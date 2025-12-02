@@ -1,21 +1,10 @@
-version: "3.9"
-
 services:
-  mongo:
-    image: mongo:6
-    container_name: flask-mongo-db
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
-
   flaskapp:
     build: .
-    container_name: flask-app
+    container_name: flask-ci-cd-app-flaskapp
     ports:
       - "5000:5000"
-    depends_on:
-      - mongo
-
-volumes:
-  mongo-data:
+    volumes:
+      - ./app:/app   # <-- mount your local code folder
+    working_dir: /app
+    command: python app.py
