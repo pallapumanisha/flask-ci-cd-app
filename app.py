@@ -14,7 +14,7 @@ collection = db["mycollection"]    # collection name
 # Home route
 @app.route("/")
 def home():
-    return jsonify({"message": "Flask app updated!"})
+    return jsonify({"message": "Flask app updated with docker-compose!"})
 
 
 # Insert data route
