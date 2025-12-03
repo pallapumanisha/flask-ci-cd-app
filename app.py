@@ -13,7 +13,7 @@ collection = db["mycollection"]    # collection name
 # Default route
 @app.route("/")
 def home():
-    return jsonify({"message": "Flask app is running!"})
+    return jsonify({"message": "Flask app is running! with docker"})
 
 # Example route to insert a document
 @app.route("/add")
