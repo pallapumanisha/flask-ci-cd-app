@@ -20,10 +20,12 @@ jobs:
         run: |
           docker compose build
           docker compose up -d
-          
+
       - name: Show running containers
         run: docker ps -a
 
       - name: Test Flask app
         run: |
-          curl http://localhost:5000
+          sleep 5  # wait for Flask to be ready
+          curl -f http://localhost:5000
+

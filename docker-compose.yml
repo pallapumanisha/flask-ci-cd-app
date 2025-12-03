@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   mongo:
     image: mongo:6
@@ -13,12 +15,9 @@ services:
     container_name: flask-app
     ports:
       - "5000:5000"
-    volumes:
-      - .:/app       # Mount local code for live updates
     environment:
       - FLASK_ENV=development
       - MONGO_URI=mongodb://mongo:27017
-    command: flask run --host=0.0.0.0 --port=5000  # auto-reload enabled
     depends_on:
       - mongo
     restart: always

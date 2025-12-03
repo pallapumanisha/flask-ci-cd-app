@@ -4,7 +4,7 @@ FROM python:3.10-slim
 # Set working directory inside container
 WORKDIR /app
 
-# Copy only requirements first for better caching
+# Copy only requirements first for caching
 COPY requirements.txt /app/
 
 # Install dependencies
@@ -20,5 +20,6 @@ EXPOSE 5000
 ENV FLASK_ENV=development
 ENV MONGO_URI=mongodb://mongo:27017
 
-# Start Flask app
-CMD ["flask", "--app", "app.py", "run", "--host=0.0.0.0", "--reload"]
+# Start Flask app with Gunicorn
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app:app"]
+
