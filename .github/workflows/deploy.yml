@@ -1,55 +1,31 @@
-name: Flask CI/CD Pipeline (Password SSH)
+name: Deploy Flask + MongoDB App
 
-# Trigger workflow on push or PR to main branch
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  build-and-test:
-    name: Build & Test
-    runs-on: [self-hosted, Linux, X64]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      # Optional: remove if you don't have tests yet
-      #- name: Run tests
-      #  run: python -m pytest
-
   deploy:
-    name: Deploy to VM
-    runs-on: [self-hosted, Linux, X64]
-    needs: build-and-test
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    runs-on: self-hosted
 
-      - name: Copy files to VM and restart Flask
-        uses: appleboy/ssh-action@v0.1.9
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          password: ${{ secrets.VM_PASSWORD }}   # <-- use password
-          port: 22
-          script: |
-            cd /path/to/your/flask/app
-            git pull origin main
-            source venv/bin/activate
-            pip install -r requirements.txt
-            sudo systemctl restart flask-app.service
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and start Docker Compose
+        run: |
+          docker compose build
+          docker compose up -d
+
+      - name: Show running containers
+        run: docker ps -a
+
+      - name: Test Flask app
+        run: |
+          sleep 5  # wait for Flask to be ready
+          curl -f http://localhost:5000
+
