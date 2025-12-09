@@ -18,8 +18,8 @@ jobs:
 
       - name: Build and start Docker Compose
         run: |
-          docker-compose build
-          docker-compose up -d
+          docker compose build
+          docker compose up -d
 
       - name: Show running containers
         run: docker ps -a
@@ -28,4 +28,3 @@ jobs:
         run: |
           sleep 5  # wait for Flask to be ready
           curl -f http://localhost:5000
-
