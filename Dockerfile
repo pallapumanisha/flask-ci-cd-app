@@ -22,3 +22,4 @@ ENV MONGO_URI=mongodb://mongo:27017
 
 # Start Flask app with Gunicorn
 CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app:app"]
+
