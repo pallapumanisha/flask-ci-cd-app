@@ -15,7 +15,7 @@ def index():
 
     # Read last inserted
     data = collection.find().sort("_id", -1).limit(1)[0]
-    return f"Flask + MongoDB Connected Successfully through mongodb→ {data['msg']}"
+    return f"Flask + MongoDB Connected Successfully through mongodb101→ {data['msg']}"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
