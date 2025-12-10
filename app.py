@@ -11,7 +11,7 @@ collection = db["messages"]
 @app.route('/')
 def index():
     # Insert sample data if not exists
-    collection.insert_one({"msg": "Hello from MongoDB!"})
+    collection.insert_one({"msg": "Hello from MongoDB JUJU!"})
 
     # Read last inserted
     data = collection.find().sort("_id", -1).limit(1)[0]
